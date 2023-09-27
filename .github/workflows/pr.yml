@@ -1,0 +1,32 @@
+name: "Run action self-test on pull request"
+on: [pull_request]
+
+jobs:
+  self-test-go:
+    runs-on:
+      - self-hosted
+      - kaas
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+      
+      - name: "run self test"
+        uses: ./
+
+  self-test-go-toolchain:
+    runs-on:
+      - self-hosted
+      - kaas
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+      
+      - name: inject toolchain version
+        run: sed -i '/^go .*/a toolchain go1.21.0' go.mod
+
+      - name: "run self test"
+        uses: ./

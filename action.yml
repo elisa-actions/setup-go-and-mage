@@ -1,0 +1,45 @@
+name: "Go and Mage setup"
+description: "Prepares Go and mage env based on go.mod file"
+author: "elisasre"
+
+inputs:
+  modFile:
+    description: "Path to go.mod file"
+    default: "go.mod"
+    required: false
+  go-cache:
+    description: "Use cache for go modules"
+    default: false
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+    - name: Retrieve Go version
+      shell: bash
+      id: go-version
+      run: ${{ github.action_path }}/go-get-version >> $GITHUB_OUTPUT
+
+    - name: Check if go version is defined in go.mod
+      shell: bash
+      if: ${{ steps.go-version.outputs.GO_VERSION == '' }}
+      run: echo "Go version not defined" && exit 1
+
+    - uses: actions/setup-go@v4
+      with:
+        cache: ${{ inputs.go-cache }}
+        go-version: ${{ steps.go-version.outputs.GO_VERSION }}
+
+    - name: Retrieve Mage version
+      shell: bash
+      run: echo "MAGE_VERSION=$(grep 'github.com/magefile/mage' go.mod | awk '{print $2}')" >> $GITHUB_OUTPUT
+      id: mage-version
+
+    - name: Check if mage version is defined in go.mod
+      shell: bash
+      if: ${{ steps.mage-version.outputs.MAGE_VERSION == '' }}
+      run: echo "Mage version not defined" && exit 1
+
+    - name: Install mage
+      shell: bash
+      run: go install github.com/magefile/mage@${{ steps.mage-version.outputs.MAGE_VERSION }}

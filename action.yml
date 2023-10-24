@@ -16,6 +16,8 @@ runs:
   using: "composite"
   steps:
     - name: Retrieve Go version
+      env:
+        INPUT_MODFILE: ${{ inputs.modFile }}
       shell: bash
       id: go-version
       run: ${{ github.action_path }}/go-get-version >> $GITHUB_OUTPUT

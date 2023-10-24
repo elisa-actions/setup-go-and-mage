@@ -3,22 +3,48 @@ on: [pull_request]
 
 jobs:
   self-test-go:
-    runs-on:
-      - self-hosted
-      - kaas
+    runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 1
       
-      - name: "run self test"
+      - name: "run self test with go.mod at repo root by default"
         uses: ./
 
+      - name: "get installed go version"
+        run: echo "GO_VERSION=$(go version | awk '{print $3}')" >> $GITHUB_OUTPUT
+        id: go-version-installed
+
+      - name: "check that GO_VERSION was configured to go1.21.3"
+        if : ${{ steps.go-version-installed.outputs.GO_VERSION != 'go1.21.3' }}
+        run: echo "Wrong go version defined. Expected 1.21.3, was ${{ steps.go-version-test.outputs.GO_VERSION }}" && exit 1
+
+  self-test-go-modfile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+      - name: "run self test with configured modfile"
+        uses: ./
+        with:
+          modFile: tests/set_gomod_path/go.mod
+
+      - name: "get installed go version"
+        run: echo "GO_VERSION=$(go version | awk '{print $3}')" >> $GITHUB_OUTPUT
+        id: go-version-installed
+      
+      - name: "check that GO_VERSION was configured to go1.20.10"
+        if : ${{ steps.go-version-installed.outputs.GO_VERSION != 'go1.20.10' }}
+        run: echo "Wrong go version defined. Expected 1.20.10, was ${{ steps.go-version-installed.outputs.GO_VERSION }}" && exit 1
+
+
   self-test-go-toolchain:
-    runs-on:
-      - self-hosted
-      - kaas
+    runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v3
@@ -26,7 +52,15 @@ jobs:
           fetch-depth: 1
       
       - name: inject toolchain version
-        run: sed -i '/^go .*/a toolchain go1.21.0' go.mod
+        run: sed -i '/^go .*/a toolchain go1.20.10' go.mod
 
-      - name: "run self test"
+      - name: "run self test with toolchain version defined"
         uses: ./
+
+      - name: "get installed go version"
+        run: echo "GO_VERSION=$(go version | awk '{print $3}')" >> $GITHUB_OUTPUT
+        id: go-version-installed
+
+      - name: "check that GO_VERSION was configured to go1.20.10"
+        if : ${{ steps.go-version-installed.outputs.GO_VERSION != 'go1.20.10' }}
+        run: echo "Wrong go version defined. Expected 1.20.10, was ${{ steps.go-version-installed.outputs.GO_VERSION }}" && exit 1

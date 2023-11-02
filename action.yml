@@ -34,7 +34,7 @@ runs:
 
     - name: Retrieve Mage version
       shell: bash
-      run: echo "MAGE_VERSION=$(grep 'github.com/magefile/mage' go.mod | awk '{print $2}')" >> $GITHUB_OUTPUT
+      run: echo "MAGE_VERSION=$(grep 'github.com/magefile/mage' ${{ inputs.modFile }} | awk '{print $2}')" >> $GITHUB_OUTPUT
       id: mage-version
 
     - name: Check if mage version is defined in go.mod

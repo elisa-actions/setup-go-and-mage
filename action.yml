@@ -27,7 +27,7 @@ runs:
       if: ${{ steps.go-version.outputs.GO_VERSION == '' }}
       run: echo "Go version not defined" && exit 1
 
-    - uses: actions/setup-go@v4
+    - uses: actions/setup-go@v5
       with:
         cache: ${{ inputs.go-cache }}
         go-version: ${{ steps.go-version.outputs.GO_VERSION }}

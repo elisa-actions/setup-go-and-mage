@@ -19,9 +19,7 @@ fi
 
 # if GO_VERSION is still not defined, attempt to find it in the default search paths
 if [ -z "$GO_VERSION" ]; then
-    DEFAULT_SEARCH_PATHS="1 2 3 4 5 6 7 8 9 10"
-
-    for p in $DEFAULT_SEARCH_PATHS; do
+    for p in {1..10}; do
         if [ -f "v${p}/go.mod" ]; then
             GO_VERSION=$(find_go_version "v${p}/go.mod")
             break;

@@ -1,8 +1,34 @@
 #!/bin/bash
 
-GO_VERSION="$(grep '^toolchain' $INPUT_MODFILE | sed 's/toolchain go*//')"
+GO_VERSION=""
+
+find_go_version() {
+    local modfile="$1"
+    local gv
+    gv="$(grep '^toolchain' $modfile | sed 's/toolchain go*//')"
+    if [ -z "$gv" ]; then
+        gv="$(grep '^go' $modfile | awk '{ print $2 }')"
+    fi
+    echo "$gv" 
+}
+
+# if INPUT_MODFILE is defined, attempt to read the go version from it
+if [ -n "$INPUT_MODFILE" -a -f "$INPUT_MODFILE" ]; then
+    GO_VERSION=$(find_go_version "${INPUT_MODFILE}")
+fi
+
+# if GO_VERSION is still not defined, attempt to find it in the default search paths
 if [ -z "$GO_VERSION" ]; then
-    GO_VERSION="$(grep '^go' $INPUT_MODFILE | awk '{ print $2 }')";
+    for p in {1..10}; do
+        if [ -f "v${p}/go.mod" ]; then
+            GO_VERSION=$(find_go_version "v${p}/go.mod")
+            break;
+        fi
+    done
+fi
+
+if [ -z "$GO_VERSION" ]; then
+    exit 1
 fi
 
 echo "GO_VERSION=$GO_VERSION"

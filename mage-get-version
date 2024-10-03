@@ -1,0 +1,31 @@
+#!/bin/bash
+
+MAGE_VERSION=""
+
+find_mage_version() {
+    local modfile="$1"
+    local mgv
+    mgv="$(grep 'github.com/magefile/mage' $modfile | awk '{print $2}')"
+    echo "$mgv" 
+}
+
+# if INPUT_MODFILE is defined, attempt to read the mage version from it
+if [ -n "$INPUT_MODFILE" -a -f "$INPUT_MODFILE" ]; then
+    MAGE_VERSION=$(find_mage_version "${INPUT_MODFILE}")
+fi
+
+# if MAGE_VERSION is still not defined, attempt to find it in the default search paths
+if [ -z "$MAGE_VERSION" ]; then
+    for p in {1..10}; do
+        if [ -f "v${p}/go.mod" ]; then
+            MAGE_VERSION=$(find_mage_version "v${p}/go.mod")
+            break;
+        fi
+    done
+fi
+
+if [ -z "$MAGE_VERSION" ]; then
+    exit 1
+fi
+
+echo "MAGE_VERSION=$MAGE_VERSION"
